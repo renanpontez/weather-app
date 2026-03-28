@@ -6,7 +6,7 @@ Search for any city, see current conditions with a 6-day forecast, and keep trac
 
 ## Live Demo
 
-> TODO: Add deployed URL
+**https://weather-app-6v5.pages.dev**
 
 ## Tech Stack
 

@@ -37,10 +37,21 @@ export function useGeolocation() {
         );
 
         if (cancelled) return;
+
+        // Navigator gives coords but no city — try to resolve via IP
+        let cityName: string | null = null;
+        try {
+          const ipGeo = await getGeoLocation();
+          cityName = ipGeo.city;
+        } catch {
+          // No city name — will use coords only
+        }
+
+        if (cancelled) return;
         setGeo({
           latitude: position.coords.latitude,
           longitude: position.coords.longitude,
-          city: null,
+          city: cityName,
           source: "navigator",
           loading: false,
           error: null,
