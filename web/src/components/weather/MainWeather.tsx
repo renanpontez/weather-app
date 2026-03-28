@@ -1,0 +1,109 @@
+import type { WeatherData, TemperatureUnit } from "@weather-app/shared";
+import { WEATHER_CODES } from "@weather-app/shared";
+import { convertTemp, formatTemperature, formatWindSpeed, todayDateString } from "@/lib/format";
+import { WeatherIcon } from "@/components/weather/WeatherIcon";
+import { Skeleton } from "@/components/common/Skeleton";
+import { UnitToggle } from "@/components/weather/UnitToggle";
+
+interface MainWeatherProps {
+  weather: WeatherData | null;
+  unit: TemperatureUnit;
+  loading: boolean;
+  onToggleUnit: () => void;
+}
+
+export function MainWeather({ weather, unit, loading, onToggleUnit }: MainWeatherProps) {
+  if (loading) {
+    return (
+      <div className="flex flex-col items-center gap-4">
+        <Skeleton className="h-8 w-48 rounded-full" />
+        <div className="flex items-center gap-4">
+          <Skeleton className="h-32 w-48 rounded-full" />
+          <Skeleton className="h-24 w-24 rounded-full" />
+        </div>
+      </div>
+    );
+  }
+
+  if (!weather) {
+    return (
+      <div className="flex flex-col items-center gap-3 text-center text-muted">
+        <span className="text-6xl" aria-hidden="true">🌍</span>
+        <p className="text-xl font-light">Search for a city</p>
+        <p className="text-sm">or allow location access for local weather</p>
+      </div>
+    );
+  }
+
+  const { current, city, daily } = weather;
+  const condition = WEATHER_CODES[current.weather_code];
+  const todayDaily = daily.find((d) => d.date === todayDateString());
+
+  return (
+    <article
+      aria-label={`${city}: ${formatTemperature(current.temperature, unit)}, ${condition?.label}, feels like ${formatTemperature(current.feels_like, unit)}, humidity ${current.humidity}%, wind ${formatWindSpeed(current.wind_speed)}`}
+      className="relative flex flex-col items-center gap-1 animate-fade-in-up"
+    >
+      <div aria-live="polite" className="sr-only">
+        {city}: {formatTemperature(current.temperature, unit)}, {condition?.label}
+      </div>
+
+      <h2 className="text-3xl font-light text-primary/80 md:text-4xl">
+        {city}
+      </h2>
+
+      <div className="relative flex items-center gap-2">
+        <p className="text-[8rem] font-extralight leading-none tracking-tighter text-white md:text-[10rem]">
+          {convertTemp(current.temperature, unit)}°
+        </p>
+        <WeatherIcon code={current.weather_code} isDay={current.is_day} size="lg" />
+
+        <div className="absolute -right-14 top-1/2 -translate-y-1/2">
+          <UnitToggle unit={unit} onToggle={onToggleUnit} />
+        </div>
+      </div>
+
+      <p className="text-lg font-light text-white">
+        {condition?.label ?? "Unknown"}
+      </p>
+
+      {todayDaily && (
+        <div className="mt-3 flex items-center gap-2 text-sm">
+          <span className="flex items-center gap-0.5 text-muted" aria-label={`High ${formatTemperature(todayDaily.temperature_max, unit)}`}>
+            <svg width="10" height="10" viewBox="0 0 8 8" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" aria-hidden="true">
+              <path d="M4 1.5v5M2 3.5l2-2 2 2" />
+            </svg>
+            {formatTemperature(todayDaily.temperature_max, unit)}
+          </span>
+          <span className="flex items-center gap-0.5 text-muted" aria-label={`Low ${formatTemperature(todayDaily.temperature_min, unit)}`}>
+            <svg width="10" height="10" viewBox="0 0 8 8" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" aria-hidden="true">
+              <path d="M4 6.5v-5M2 4.5l2 2 2-2" />
+            </svg>
+            {formatTemperature(todayDaily.temperature_min, unit)}
+          </span>
+        </div>
+      )}
+
+      <div className="mt-2 flex items-center gap-5 text-sm text-muted">
+        <span className="flex items-center gap-1.5" aria-label={`Feels like ${formatTemperature(current.feels_like, unit)}`}>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" aria-hidden="true">
+            <path d="M12 9a4 4 0 1 0 0 8 4 4 0 0 0 0-8z" /><path d="M12 2v2m0 16v2M4.93 4.93l1.41 1.41m11.32 11.32 1.41 1.41M2 12h2m16 0h2M4.93 19.07l1.41-1.41m11.32-11.32 1.41-1.41" />
+          </svg>
+          {formatTemperature(current.feels_like, unit)}
+        </span>
+        <span className="flex items-center gap-1.5" aria-label={`Humidity ${current.humidity}%`}>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" aria-hidden="true">
+            <path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z" />
+          </svg>
+          {current.humidity}%
+        </span>
+        <span className="flex items-center gap-1.5" aria-label={`Wind ${formatWindSpeed(current.wind_speed)}`}>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" aria-hidden="true">
+            <path d="M17.7 7.7A2.5 2.5 0 1 1 19 12H2m7.6-7.4A2 2 0 1 1 11 8H2m8.6 11.4A2 2 0 1 0 12 16H2" />
+          </svg>
+          {formatWindSpeed(current.wind_speed)}
+        </span>
+      </div>
+    </article>
+  );
+}

@@ -1,0 +1,47 @@
+@import "tailwindcss";
+
+@theme {
+  --font-serif: "Georgia", "Times New Roman", serif;
+  --color-primary: #92aaf0;
+  --color-secondary: #181c26;
+  --color-background: #0c0e13;
+  --color-muted: rgba(255, 255, 255, 0.5);
+  --color-surface: #141720;
+  --color-surface-hover: #1a1e2a;
+}
+
+/* Hide scrollbar for horizontal scroll containers */
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
+/* Entrance animation */
+@keyframes fade-in-up {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in-up {
+  animation: fade-in-up 0.4s ease-out both;
+}
+
+/* Respect reduced motion preference */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
