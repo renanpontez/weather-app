@@ -1,0 +1,17 @@
+name = "weather-api"
+main = "src/index.ts"
+compatibility_date = "2025-03-20"
+compatibility_flags = ["nodejs_compat"]
+
+[durable_objects]
+bindings = [
+  { name = "WEATHER_CACHE", class_name = "WeatherCache" },
+  { name = "RECENT_SEARCHES", class_name = "RecentSearches" }
+]
+
+[[migrations]]
+tag = "v1"
+new_classes = ["WeatherCache", "RecentSearches"]
+
+[vars]
+CORS_ORIGIN = "http://localhost:5173"
