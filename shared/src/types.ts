@@ -58,6 +58,8 @@ export interface RecentSearch {
   searched_at: string;
 }
 
+export type RecentSearchInput = Pick<RecentSearch, "city" | "country" | "country_code" | "latitude" | "longitude">;
+
 export type TemperatureUnit = "celsius" | "fahrenheit";
 
 export interface CitySearchParams {

@@ -6,11 +6,9 @@ import { recentRoute } from "./routes/recent";
 import { rateLimiter } from "./middleware/rate-limit";
 
 export { WeatherCache } from "./durable-objects/weather-cache";
-export { RecentSearches } from "./durable-objects/recent-searches";
 
 export interface Env {
   WEATHER_CACHE: DurableObjectNamespace;
-  RECENT_SEARCHES: DurableObjectNamespace;
   CORS_ORIGIN: string;
 }
 
@@ -24,7 +22,7 @@ app.use(
       if (!origin || allowed === "*") return "*";
       return origin === allowed ? origin : "";
     },
-    allowMethods: ["GET", "POST", "OPTIONS"],
+    allowMethods: ["GET", "POST", "DELETE", "OPTIONS"],
     allowHeaders: ["Content-Type"],
   })
 );

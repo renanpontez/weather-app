@@ -4,8 +4,14 @@ import { fetchWeather } from "../lib/open-meteo";
 
 export const weatherRoute = new Hono<{ Bindings: Env }>();
 
+function getStub(env: Env) {
+  const id = env.WEATHER_CACHE.idFromName("global");
+  return env.WEATHER_CACHE.get(id);
+}
+
 async function refreshCache(
   stub: DurableObjectStub,
+  cacheKey: string,
   lat: number,
   lon: number,
   meta: { city: string; country: string; country_code: string },
@@ -19,7 +25,7 @@ async function refreshCache(
     cached_at: new Date().toISOString(),
   };
   await stub.fetch(
-    new Request("https://do/set", {
+    new Request(`https://do/cache/set?key=${cacheKey}`, {
       method: "POST",
       body: JSON.stringify(result),
     }),
@@ -45,11 +51,10 @@ weatherRoute.get("/", async (c) => {
   }
 
   const cacheKey = `${latitude.toFixed(2)},${longitude.toFixed(2)}`;
-  const id = c.env.WEATHER_CACHE.idFromName(cacheKey);
-  const stub = c.env.WEATHER_CACHE.get(id);
+  const stub = getStub(c.env);
 
   const cacheResponse = await stub.fetch(
-    new Request("https://do/get", { method: "GET" }),
+    new Request(`https://do/cache/get?key=${cacheKey}`, { method: "GET" }),
   );
 
   if (cacheResponse.ok) {
@@ -59,7 +64,7 @@ weatherRoute.get("/", async (c) => {
 
     if (isStale) {
       c.executionCtx.waitUntil(
-        refreshCache(stub, latitude, longitude, { city, country, country_code: countryCode }),
+        refreshCache(stub, cacheKey, latitude, longitude, { city, country, country_code: countryCode }),
       );
     }
 
@@ -79,7 +84,7 @@ weatherRoute.get("/", async (c) => {
   };
 
   await stub.fetch(
-    new Request("https://do/set", {
+    new Request(`https://do/cache/set?key=${cacheKey}`, {
       method: "POST",
       body: JSON.stringify(result),
     }),
