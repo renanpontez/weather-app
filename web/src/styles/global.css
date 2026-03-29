@@ -9,6 +9,35 @@
   --color-surface: #141720;
   --color-surface-hover: #1a1e2a;
   --color-surface-light: rgba(255, 255, 255, 0.06);
+
+  /* Weather background gradients */
+  --color-sky-clear-from: #1a2a4a;
+  --color-sky-clear-via: #1e3a5f;
+  --color-sky-clear-to: #0f1d33;
+  --color-sky-cloudy-from: #141e30;
+  --color-sky-cloudy-via: #1a2840;
+  --color-sky-cloudy-to: #0f1620;
+  --color-sky-overcast-from: #1a1e28;
+  --color-sky-overcast-via: #202530;
+  --color-sky-overcast-to: #12151c;
+  --color-sky-fog-from: #1c2028;
+  --color-sky-fog-via: #22262f;
+  --color-sky-fog-to: #14171e;
+  --color-sky-rain-from: #101520;
+  --color-sky-rain-via: #151c2a;
+  --color-sky-rain-to: #0c1018;
+  --color-sky-snow-from: #161a22;
+  --color-sky-snow-via: #1c2230;
+  --color-sky-snow-to: #10141c;
+  --color-sky-storm-from: #0c0e16;
+  --color-sky-storm-via: #12151f;
+  --color-sky-storm-to: #08090f;
+  --color-sky-night-from: #0a0c14;
+  --color-sky-night-via: #0f1424;
+  --color-sky-night-to: #0a0c14;
+  --color-sky-default-from: #0f1219;
+  --color-sky-default-via: #0c0e13;
+  --color-sky-default-to: #0a0c10;
 }
 
 /* Hide scrollbar for horizontal scroll containers */
