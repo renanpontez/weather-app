@@ -1,6 +1,6 @@
 import { useEffect, useCallback, useRef } from "react";
 import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
-import type { RecentSearch, RecentSearchInput } from "@weather-app/shared";
+import type { RecentSearch } from "@weather-app/shared";
 import {
   getRecentSearches,
   addRecentSearch,
@@ -15,7 +15,10 @@ function useLiveSync(invalidate: () => void) {
   const retriesRef = useRef(0);
   const closedRef = useRef(false);
   const invalidateRef = useRef(invalidate);
-  invalidateRef.current = invalidate;
+
+  useEffect(() => {
+    invalidateRef.current = invalidate;
+  }, [invalidate]);
 
   useEffect(() => {
     closedRef.current = false;
