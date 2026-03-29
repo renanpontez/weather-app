@@ -1,13 +1,29 @@
 import { Hono } from "hono";
+import { z } from "zod";
 import type { Env } from "../index";
-import type { RecentSearchInput } from "@weather-app/shared";
 import { fetchWeather } from "../lib/open-meteo";
 import { getStub } from "../lib/get-stub";
 
 export const recentRoute = new Hono<{ Bindings: Env }>();
 
-async function resolveWeather(stub: DurableObjectStub, lat: number, lon: number): Promise<{ temperature: number; weather_code: number } | null> {
-  // Try cache first
+const RecentInput = z.object({
+  city: z.string().max(100),
+  country: z.string().max(100),
+  country_code: z.string().length(2),
+  latitude: z.number().min(-90).max(90),
+  longitude: z.number().min(-180).max(180),
+});
+
+const RemoveInput = z.object({
+  city: z.string().max(100),
+  country: z.string().max(100),
+});
+
+async function resolveWeather(
+  stub: DurableObjectStub,
+  lat: number,
+  lon: number,
+): Promise<{ temperature: number; weather_code: number } | null> {
   const cacheKey = `${lat.toFixed(2)},${lon.toFixed(2)}`;
   const res = await stub.fetch(
     new Request(`https://do/cache/get?key=${cacheKey}`, { method: "GET" }),
@@ -20,7 +36,6 @@ async function resolveWeather(stub: DurableObjectStub, lat: number, lon: number)
     }
   }
 
-  // Cache miss — fetch from API
   try {
     const fresh = await fetchWeather(lat, lon);
     return { temperature: fresh.current.temperature, weather_code: fresh.current.weather_code };
@@ -36,32 +51,34 @@ recentRoute.get("/", async (c) => {
 });
 
 recentRoute.post("/", async (c) => {
-  const input: RecentSearchInput = await c.req.json();
+  const parsed = RecentInput.safeParse(await c.req.json());
+  if (!parsed.success) return c.json({ error: "Invalid input" }, 400);
+  const input = parsed.data;
   const stub = getStub(c.env);
-
   const weather = await resolveWeather(stub, input.latitude, input.longitude);
-
-  const enriched = {
-    ...input,
-    temperature: weather?.temperature ?? 0,
-    weather_code: weather?.weather_code ?? 0,
-  };
 
   const res = await stub.fetch(
     new Request("https://do/recent", {
       method: "POST",
-      body: JSON.stringify(enriched),
+      body: JSON.stringify({
+        ...input,
+        temperature: weather?.temperature ?? 0,
+        weather_code: weather?.weather_code ?? 0,
+      }),
     }),
   );
   return c.json(await res.json());
 });
 
 recentRoute.delete("/", async (c) => {
+  const parsed = RemoveInput.safeParse(await c.req.json());
+  if (!parsed.success) return c.json({ error: "Invalid input" }, 400);
+  const input = parsed.data;
   const stub = getStub(c.env);
   const res = await stub.fetch(
     new Request("https://do/recent/remove", {
       method: "POST",
-      body: JSON.stringify(await c.req.json()),
+      body: JSON.stringify(input),
     }),
   );
   return c.json(await res.json());

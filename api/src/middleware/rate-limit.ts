@@ -5,19 +5,15 @@ interface RateLimitOptions {
   windowMs: number;
 }
 
-
 /**
  * Rate limiter backed by Durable Object storage.
- * Unlike an in-memory Map, this persists across Worker invocations.
+ * Uses only cf-connecting-ip (set by Cloudflare, not spoofable).
  */
 export function rateLimiter(options: RateLimitOptions): MiddlewareHandler<{
   Bindings: { WEATHER_CACHE: DurableObjectNamespace };
 }> {
   return async (c, next) => {
-    const ip =
-      c.req.header("cf-connecting-ip") ??
-      c.req.header("x-forwarded-for")?.split(",")[0]?.trim() ??
-      "unknown";
+    const ip = c.req.header("cf-connecting-ip") ?? "unknown";
 
     const id = c.env.WEATHER_CACHE.idFromName("global");
     const stub = c.env.WEATHER_CACHE.get(id);

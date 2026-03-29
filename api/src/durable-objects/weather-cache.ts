@@ -2,9 +2,16 @@ import { DurableObject } from "cloudflare:workers";
 import type { RecentSearch } from "@weather-app/shared";
 
 const CACHE_TTL_MS = 10 * 60 * 1000; // 10 minutes
+const CACHE_EXPIRY_MS = 24 * 60 * 60 * 1000; // 24 hours — dead cache cleanup
 const MAX_RECENT = 10;
+const MAX_WS_CONNECTIONS = 100;
+const CLEANUP_INTERVAL_MS = 60 * 60 * 1000; // 1 hour
 
-export class WeatherCache extends DurableObject {
+interface WeatherCacheEnv {
+  CORS_ORIGIN: string;
+}
+
+export class WeatherCache extends DurableObject<WeatherCacheEnv> {
   // --- Storage helpers ---
 
   private async getRecent(): Promise<RecentSearch[]> {
@@ -38,6 +45,7 @@ export class WeatherCache extends DurableObject {
 
       if (!record || now > record.resetAt) {
         await this.ctx.storage.put(key, { count: 1, resetAt: now + windowMs });
+        this.scheduleCleanup();
         return new Response("ok");
       }
 
@@ -60,8 +68,9 @@ export class WeatherCache extends DurableObject {
       const key = url.searchParams.get("key");
       if (!key) return new Response(null, { status: 400 });
 
-      const cached = await this.ctx.storage.get<string>(`cache:${key}`);
-      const timestamp = await this.ctx.storage.get<number>(`ts:${key}`);
+      const entries = await this.ctx.storage.get<string | number>([`cache:${key}`, `ts:${key}`]);
+      const cached = entries.get(`cache:${key}`) as string | undefined;
+      const timestamp = entries.get(`ts:${key}`) as number | undefined;
 
       if (!cached) return new Response(null, { status: 404 });
 
@@ -79,8 +88,10 @@ export class WeatherCache extends DurableObject {
       if (!key) return new Response(null, { status: 400 });
 
       const body = await request.text();
-      await this.ctx.storage.put(`cache:${key}`, body);
-      await this.ctx.storage.put(`ts:${key}`, Date.now());
+      await this.ctx.storage.put({
+        [`cache:${key}`]: body,
+        [`ts:${key}`]: Date.now(),
+      });
       return new Response("ok");
     }
 
@@ -120,13 +131,22 @@ export class WeatherCache extends DurableObject {
     // --- WebSocket ---
 
     if (request.headers.get("Upgrade") === "websocket") {
+      // Origin check
+      const origin = request.headers.get("Origin");
+      if (origin && origin !== this.env.CORS_ORIGIN) {
+        return new Response("Forbidden", { status: 403 });
+      }
+
+      // Connection cap
+      const sockets = this.ctx.getWebSockets();
+      if (sockets.length >= MAX_WS_CONNECTIONS) {
+        return new Response("Too many connections", { status: 503 });
+      }
+
       const pair = new WebSocketPair();
       const [client, server] = Object.values(pair);
 
       this.ctx.acceptWebSocket(server);
-
-      const sockets = this.ctx.getWebSockets();
-      console.log(`[WS] New connection. Total sessions: ${sockets.length}`);
 
       server.send(JSON.stringify({ type: "init", searches: await this.getRecent() }));
       return new Response(null, { status: 101, webSocket: client });
@@ -135,19 +155,43 @@ export class WeatherCache extends DurableObject {
     return new Response("Not found", { status: 404 });
   }
 
-  webSocketClose(ws: WebSocket) {
-    const remaining = this.ctx.getWebSockets().length;
-    console.log(`[WS] Connection closed. Remaining sessions: ${remaining}`);
+  // --- Periodic cleanup of expired keys ---
+
+  async alarm() {
+    const now = Date.now();
+    const allKeys = await this.ctx.storage.list();
+    const toDelete: string[] = [];
+
+    for (const [key, value] of allKeys) {
+      if (key.startsWith("rate:") && (value as { resetAt: number }).resetAt < now) {
+        toDelete.push(key);
+      }
+      if (key.startsWith("ts:") && now - (value as number) > CACHE_EXPIRY_MS) {
+        toDelete.push(key);
+        toDelete.push(key.replace("ts:", "cache:"));
+      }
+    }
+
+    if (toDelete.length) {
+      await this.ctx.storage.delete(toDelete);
+      console.log(`[Cleanup] Deleted ${toDelete.length} expired keys`);
+    }
+
+    this.scheduleCleanup();
   }
 
-  webSocketError(ws: WebSocket) {
-    const remaining = this.ctx.getWebSockets().length;
-    console.log(`[WS] Connection error. Remaining sessions: ${remaining}`);
+  private scheduleCleanup() {
+    this.ctx.storage.setAlarm(Date.now() + CLEANUP_INTERVAL_MS);
+  }
+
+  webSocketClose(_ws: WebSocket) {}
+
+  webSocketError(_ws: WebSocket) {
+    console.warn(`[WS] Connection error. Remaining: ${this.ctx.getWebSockets().length}`);
   }
 
   private broadcast(data: Record<string, unknown>) {
     const sockets = this.ctx.getWebSockets();
-    console.log(`[WS] Broadcasting to ${sockets.length} sessions`);
     const message = JSON.stringify(data);
     let sent = 0;
     for (const ws of sockets) {
@@ -158,6 +202,5 @@ export class WeatherCache extends DurableObject {
         // Dead socket — runtime will clean it up
       }
     }
-    console.log(`[WS] Broadcast complete: ${sent} sent`);
   }
 }
