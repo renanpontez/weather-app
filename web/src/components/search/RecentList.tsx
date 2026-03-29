@@ -74,10 +74,19 @@ export function RecentList({ searches, unit, loading, activeCity, onSelect, onRe
               style={{ animationDelay: `${i * 50}ms` }}
               onClick={() => onSelect(search)}
             >
-              <button
+              <span
+                role="button"
+                tabIndex={0}
                 onClick={(e) => {
                   e.stopPropagation();
                   onRemove(search);
+                }}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" || e.key === " ") {
+                    e.stopPropagation();
+                    e.preventDefault();
+                    onRemove(search);
+                  }
                 }}
                 aria-label={`Remove ${search.city}`}
                 className="absolute -right-1.5 -top-1.5 flex h-5 w-5 cursor-pointer items-center justify-center rounded-full border border-white/10 bg-surface text-muted opacity-0 transition-opacity hover:text-red-400 group-hover:opacity-100 focus:opacity-100 focus:outline-none"
@@ -85,7 +94,7 @@ export function RecentList({ searches, unit, loading, activeCity, onSelect, onRe
                 <svg width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" aria-hidden="true">
                   <path d="M2 2l6 6M8 2l-6 6" />
                 </svg>
-              </button>
+              </span>
               <div className="text-left">
                 <p className="font-medium text-white">{search.city}</p>
                 <p className="text-md text-muted">
