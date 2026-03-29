@@ -21,7 +21,7 @@ export function RecentList({ searches, unit, loading, activeCity, onSelect, onRe
         <h3 className="mb-3 text-xs font-medium uppercase tracking-widest text-white">Recent searches</h3>
         <div className="flex gap-3">
           {Array.from({ length: 3 }).map((_, i) => (
-            <Skeleton key={i} className="h-16 w-44 shrink-0 rounded-full" />
+            <Skeleton key={i} className="h-24 w-44 shrink-0 rounded-lg" />
           ))}
         </div>
       </div>
@@ -47,16 +47,15 @@ export function RecentList({ searches, unit, loading, activeCity, onSelect, onRe
           Clear all
         </button>
       </div>
-      <div
-        className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide"
-        role="list"
+      <ul
+        className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide list-none m-0 p-0"
       >
         {searches.map((search, i) => {
           const isActive = search.city === activeCity;
           return (
+            <li key={`${search.city}-${search.country}`} className="shrink-0">
             <button
               type="button"
-              key={`${search.city}-${search.country}`}
               aria-label={`Select ${search.city}, ${search.country}`}
               className={clsx(
                 "group relative flex shrink-0 cursor-pointer items-center gap-8 rounded-xl border px-5 py-3 text-left transition-all animate-fade-in-up",
@@ -100,9 +99,10 @@ export function RecentList({ searches, unit, loading, activeCity, onSelect, onRe
               </div>
               <WeatherIcon code={search.weather_code} isDay={true} size="sm" />
             </button>
+            </li>
           );
         })}
-      </div>
+      </ul>
     </section>
   );
 }

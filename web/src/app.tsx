@@ -8,6 +8,7 @@ import { SearchBar } from "@/components/search/SearchBar";
 import { MainWeather } from "@/components/weather/MainWeather";
 import { RecentList } from "@/components/search/RecentList";
 import { Alert } from "@/components/common/Alert";
+import { Skeleton } from "@/components/common/Skeleton";
 import { UnitToggle } from "@/components/weather/UnitToggle";
 import { WeekForecast } from "@/components/weather/WeekForecast";
 import { WeatherBackground } from "@/components/weather/WeatherBackground";
@@ -110,7 +111,18 @@ export function App() {
           </div>
 
           <div className="flex flex-col gap-10">
-            {weather && <WeekForecast days={weather.daily} unit={unit} />}
+            {weather ? (
+              <WeekForecast days={weather.daily} unit={unit} />
+            ) : isLoading ? (
+              <section className="w-full">
+                <Skeleton className="mb-3 h-4 w-44 rounded-full" />
+                <div className="flex flex-col gap-2 md:grid md:grid-cols-6 md:gap-2">
+                  {[0, 1, 2, 3, 4, 5].map((i) => (
+                    <Skeleton key={i} className="h-12 w-full rounded-xl" />
+                  ))}
+                </div>
+              </section>
+            ) : null}
 
             <RecentList
               searches={searches}

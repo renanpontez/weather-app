@@ -8,7 +8,7 @@
   --color-muted: rgba(255, 255, 255, 0.5);
   --color-surface: #141720;
   --color-surface-hover: #1a1e2a;
-  --color-surface-light: rgba(0, 0, 0, 0.05);
+  --color-surface-light: rgba(255, 255, 255, 0.06);
 }
 
 /* Hide scrollbar for horizontal scroll containers */
