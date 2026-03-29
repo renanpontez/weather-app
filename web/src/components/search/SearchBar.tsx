@@ -98,7 +98,7 @@ export function SearchBar({ onCityPick }: SearchBarProps) {
           aria-autocomplete="list"
           aria-controls="city-suggestions"
           aria-activedescendant={highlighted >= 0 ? `suggestion-${highlighted}` : undefined}
-          className="w-full rounded-full border border-white/10 bg-surface py-2.5 pl-10 pr-4 text-sm text-white placeholder:text-muted focus:border-primary/30 focus:outline-none focus:ring-2 focus:ring-primary/20"
+          className="w-full rounded-full border border-white/10 bg-surface py-2.5 pl-10 pr-4 text-base md:text-sm text-white placeholder:text-muted focus:border-primary/30 focus:outline-none focus:ring-2 focus:ring-primary/20"
         />
 
         {loading && (
