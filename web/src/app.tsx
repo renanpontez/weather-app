@@ -1,3 +1,4 @@
+import { useRef } from "react";
 import type { GeocodingResult, RecentSearch } from "@weather-app/shared";
 import { useInitialWeather } from "@/hooks/useInitialWeather";
 import { useUnitsPreference } from "@/hooks/useUnitsPreference";
@@ -18,6 +19,7 @@ interface LocationFields {
 }
 
 export function App() {
+  const weatherRef = useRef<HTMLDivElement>(null);
   const isOnline = useOnlineStatus();
   const { unit, toggle } = useUnitsPreference();
   const { weather, isLoading, error, geoError, refetch, selectLocation } = useInitialWeather();
@@ -35,6 +37,7 @@ export function App() {
       },
       unit,
     );
+    weatherRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
   }
 
   const errorText = error instanceof Error ? error.message : error ? String(error) : null;
@@ -87,7 +90,7 @@ export function App() {
             </div>
           )}
 
-          <div className="flex min-h-[40vh] items-center justify-center py-18">
+          <div ref={weatherRef} className="flex min-h-[40vh] items-center justify-center py-18">
             <MainWeather weather={weather} unit={unit} loading={isLoading} onToggleUnit={toggle} />
           </div>
 
