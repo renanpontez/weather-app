@@ -91,13 +91,13 @@ export function SearchBar({ onCityPick }: SearchBarProps) {
           value={query}
           onChange={(e) => onInputChange(e.target.value)}
           onFocus={() => results.length > 0 && setDropdownVisible(true)}
-          onBlur={() => setTimeout(() => setDropdownVisible(false), 200)}
+          onBlur={dismissDropdown}
           onKeyDown={onKeyNavigation}
           placeholder="Search for a city..."
           autoComplete="off"
           aria-autocomplete="list"
-          aria-controls="city-suggestions"
-          aria-activedescendant={highlighted >= 0 ? `suggestion-${highlighted}` : undefined}
+          aria-controls={showResults ? "city-suggestions" : undefined}
+          aria-activedescendant={showResults && highlighted >= 0 ? `suggestion-${highlighted}` : undefined}
           className="w-full rounded-full border border-white/10 bg-surface py-2.5 pl-10 pr-4 text-base md:text-sm text-white placeholder:text-muted focus:border-primary/30 focus:outline-none focus:ring-2 focus:ring-primary/20"
         />
 
@@ -135,7 +135,10 @@ export function SearchBar({ onCityPick }: SearchBarProps) {
                 "cursor-pointer px-4 py-2.5 text-sm transition-colors first:rounded-t-2xl last:rounded-b-2xl",
                 i === highlighted ? "bg-primary/15 text-primary" : "text-white/80 hover:bg-surface-hover",
               )}
-              onMouseDown={() => confirmSelection(city)}
+              onMouseDown={(e) => {
+                e.preventDefault();
+                confirmSelection(city);
+              }}
               onMouseEnter={() => setHighlighted(i)}
             >
               <span className="font-medium">{city.name}</span>

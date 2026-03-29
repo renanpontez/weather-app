@@ -1,8 +1,8 @@
 import clsx from "clsx";
 import type { RecentSearch, TemperatureUnit } from "@weather-app/shared";
 import { formatTemperature, timeAgo } from "@/lib/format";
-import { WeatherIcon } from "@/components/weather/WeatherIcon";
-import { Skeleton } from "@/components/common/Skeleton";
+import { WeatherIcon } from "@/components/common/WeatherIcon";
+import { RecentListSkeleton } from "./RecentListSkeleton";
 
 interface RecentListProps {
   searches: RecentSearch[];
@@ -15,18 +15,7 @@ interface RecentListProps {
 }
 
 export function RecentList({ searches, unit, loading, activeCity, onSelect, onRemove, onClearAll }: RecentListProps) {
-  if (loading) {
-    return (
-      <div>
-        <h3 className="mb-3 text-xs font-medium uppercase tracking-widest text-white">Recent searches</h3>
-        <div className="flex gap-3">
-          {Array.from({ length: 3 }).map((_, i) => (
-            <Skeleton key={i} className="h-24 w-44 shrink-0 rounded-lg" />
-          ))}
-        </div>
-      </div>
-    );
-  }
+  if (loading) return <RecentListSkeleton />;
 
   if (searches.length === 0) return null;
 

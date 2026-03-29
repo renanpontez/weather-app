@@ -1,6 +1,6 @@
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { RecentList } from "@/components/search/RecentList";
+import { RecentList } from "@/components/RecentList/RecentList";
 import type { RecentSearch } from "@weather-app/shared";
 
 const mockSearches: RecentSearch[] = [
@@ -43,7 +43,7 @@ describe("RecentList", () => {
 
   it("shows loading skeletons when loading", () => {
     render(<RecentList {...defaultProps} loading={true} searches={[]} />);
-    expect(screen.getByText("Recent searches")).toBeInTheDocument();
+    expect(screen.getAllByRole("status").length).toBeGreaterThan(0);
   });
 
   it("renders search cards with city and temperature", () => {

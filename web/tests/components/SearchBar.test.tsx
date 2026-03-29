@@ -1,6 +1,6 @@
 import { render, screen, act } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { SearchBar } from "@/components/search/SearchBar";
+import { SearchBar } from "@/components/SearchBar/SearchBar";
 import * as citySearch from "@/hooks/useCitySearch";
 
 const mockResults = [

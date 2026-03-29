@@ -1,5 +1,5 @@
 import { render, screen } from "@testing-library/react";
-import { MainWeather } from "@/components/weather/MainWeather";
+import { MainWeather } from "@/components/MainWeather/MainWeather";
 import { formatTemperature, formatWindSpeed, todayDateString } from "@/lib/format";
 import type { WeatherData } from "@weather-app/shared";
 

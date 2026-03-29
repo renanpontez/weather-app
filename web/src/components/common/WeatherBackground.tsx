@@ -16,43 +16,50 @@ interface WeatherBackgroundProps {
   isDay: boolean;
 }
 
-function getEffect(icon: string, isDay: boolean) {
-  if (icon.includes("rain") || icon === "drizzle" || icon === "freezing-drizzle" || icon === "freezing-rain") return "rain";
-  if (icon.includes("snow")) return "snow";
-  if (icon === "thunderstorm") return "storm";
-  if (icon === "fog") return "fog";
+type WeatherEffect = "rain" | "snow" | "storm" | "fog" | "stars" | null;
+
+const EFFECT_MAP: Record<string, WeatherEffect> = {
+  rain: "rain",
+  "heavy-rain": "rain",
+  "rain-showers": "rain",
+  drizzle: "rain",
+  "freezing-drizzle": "rain",
+  "freezing-rain": "rain",
+  snow: "snow",
+  "heavy-snow": "snow",
+  thunderstorm: "storm",
+  fog: "fog",
+};
+
+function getEffect(icon: string, isDay: boolean): WeatherEffect {
+  if (EFFECT_MAP[icon]) return EFFECT_MAP[icon];
   if (!isDay && (icon === "clear" || icon === "mostly-clear")) return "stars";
   return null;
 }
 
-function getGradient(icon: string, isDay: boolean): string {
-  if (!isDay) return "from-[#0a0c14] via-[#0f1424] to-[#0a0c14]";
+const GRADIENT_NIGHT = "from-sky-night-from via-sky-night-via to-sky-night-to";
+const GRADIENT_DEFAULT = "from-sky-default-from via-sky-default-via to-sky-default-to";
 
-  switch (icon) {
-    case "clear":
-    case "mostly-clear":
-      return "from-[#1a2a4a] via-[#1e3a5f] to-[#0f1d33]";
-    case "partly-cloudy":
-      return "from-[#141e30] via-[#1a2840] to-[#0f1620]";
-    case "overcast":
-      return "from-[#1a1e28] via-[#202530] to-[#12151c]";
-    case "fog":
-      return "from-[#1c2028] via-[#22262f] to-[#14171e]";
-    case "drizzle":
-    case "rain":
-    case "heavy-rain":
-    case "freezing-drizzle":
-    case "freezing-rain":
-    case "rain-showers":
-      return "from-[#101520] via-[#151c2a] to-[#0c1018]";
-    case "snow":
-    case "heavy-snow":
-      return "from-[#161a22] via-[#1c2230] to-[#10141c]";
-    case "thunderstorm":
-      return "from-[#0c0e16] via-[#12151f] to-[#08090f]";
-    default:
-      return "from-[#0f1219] via-[#0c0e13] to-[#0a0c10]";
-  }
+const GRADIENT_MAP: Record<string, string> = {
+  clear: "from-sky-clear-from via-sky-clear-via to-sky-clear-to",
+  "mostly-clear": "from-sky-clear-from via-sky-clear-via to-sky-clear-to",
+  "partly-cloudy": "from-sky-cloudy-from via-sky-cloudy-via to-sky-cloudy-to",
+  overcast: "from-sky-overcast-from via-sky-overcast-via to-sky-overcast-to",
+  fog: "from-sky-fog-from via-sky-fog-via to-sky-fog-to",
+  drizzle: "from-sky-rain-from via-sky-rain-via to-sky-rain-to",
+  rain: "from-sky-rain-from via-sky-rain-via to-sky-rain-to",
+  "heavy-rain": "from-sky-rain-from via-sky-rain-via to-sky-rain-to",
+  "freezing-drizzle": "from-sky-rain-from via-sky-rain-via to-sky-rain-to",
+  "freezing-rain": "from-sky-rain-from via-sky-rain-via to-sky-rain-to",
+  "rain-showers": "from-sky-rain-from via-sky-rain-via to-sky-rain-to",
+  snow: "from-sky-snow-from via-sky-snow-via to-sky-snow-to",
+  "heavy-snow": "from-sky-snow-from via-sky-snow-via to-sky-snow-to",
+  thunderstorm: "from-sky-storm-from via-sky-storm-via to-sky-storm-to",
+};
+
+function getGradient(icon: string, isDay: boolean): string {
+  if (!isDay) return GRADIENT_NIGHT;
+  return GRADIENT_MAP[icon] ?? GRADIENT_DEFAULT;
 }
 
 const rainParticles = generateParticles(40);
@@ -154,7 +161,7 @@ export function WeatherBackground({ weatherCode, isDay }: WeatherBackgroundProps
   const gradient = getGradient(icon, isDay);
 
   return (
-    <div className={`fixed inset-0 -z-10 bg-gradient-to-b ${gradient} transition-colors duration-1000`}>
+    <div className={`fixed inset-0 -z-10 bg-linear-to-b ${gradient} transition-colors duration-1000`}>
       {effect === "stars" && <StarsEffect />}
       {effect === "rain" && <RainEffect />}
       {effect === "snow" && <SnowEffect />}

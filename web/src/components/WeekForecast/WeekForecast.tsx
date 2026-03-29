@@ -1,7 +1,7 @@
 import clsx from "clsx";
 import type { DailyForecast as DayForecast, TemperatureUnit } from "@weather-app/shared";
 import { formatTemperature, formatDay, todayDateString } from "@/lib/format";
-import { WeatherIcon } from "@/components/weather/WeatherIcon";
+import { WeatherIcon } from "@/components/common/WeatherIcon";
 
 interface WeekForecastProps {
   days: DayForecast[];
