@@ -10,7 +10,7 @@ function getStub(env: Env) {
   return env.WEATHER_CACHE.get(id);
 }
 
-async function resolveWeather(stub: DurableObjectStub, lat: number, lon: number) {
+async function resolveWeather(stub: DurableObjectStub, lat: number, lon: number): Promise<{ temperature: number; weather_code: number } | null> {
   // Try cache first
   const cacheKey = `${lat.toFixed(2)},${lon.toFixed(2)}`;
   const res = await stub.fetch(
@@ -24,12 +24,12 @@ async function resolveWeather(stub: DurableObjectStub, lat: number, lon: number)
     }
   }
 
-  // Cache miss — fetch directly
+  // Cache miss — fetch from API
   try {
     const fresh = await fetchWeather(lat, lon);
     return { temperature: fresh.current.temperature, weather_code: fresh.current.weather_code };
   } catch {
-    return { temperature: 0, weather_code: 0 };
+    return null;
   }
 }
 
@@ -47,7 +47,8 @@ recentRoute.post("/", async (c) => {
 
   const enriched = {
     ...input,
-    ...weather,
+    temperature: weather?.temperature ?? 0,
+    weather_code: weather?.weather_code ?? 0,
   };
 
   const res = await stub.fetch(

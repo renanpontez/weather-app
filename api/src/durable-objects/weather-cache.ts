@@ -27,6 +27,35 @@ export class WeatherCache extends DurableObject {
   async fetch(request: Request): Promise<Response> {
     const url = new URL(request.url);
 
+    // --- Rate limiting ---
+
+    if (url.pathname === "/rate-check") {
+      const ip = url.searchParams.get("ip") ?? "unknown";
+      const max = parseInt(url.searchParams.get("max") ?? "60", 10);
+      const windowMs = parseInt(url.searchParams.get("window") ?? "60000", 10);
+
+      const key = `rate:${ip}`;
+      const now = Date.now();
+      const record = await this.ctx.storage.get<{ count: number; resetAt: number }>(key);
+
+      if (!record || now > record.resetAt) {
+        await this.ctx.storage.put(key, { count: 1, resetAt: now + windowMs });
+        return new Response("ok");
+      }
+
+      record.count++;
+      await this.ctx.storage.put(key, record);
+
+      if (record.count > max) {
+        return new Response(null, {
+          status: 429,
+          headers: { "Retry-After": String(Math.ceil((record.resetAt - now) / 1000)) },
+        });
+      }
+
+      return new Response("ok");
+    }
+
     // --- Weather cache ---
 
     if (url.pathname === "/cache/get") {

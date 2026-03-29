@@ -5,26 +5,30 @@ interface RateLimitOptions {
   windowMs: number;
 }
 
-const ipRequestCounts = new Map<string, { count: number; resetAt: number }>();
 
-export function rateLimiter(options: RateLimitOptions): MiddlewareHandler {
+/**
+ * Rate limiter backed by Durable Object storage.
+ * Unlike an in-memory Map, this persists across Worker invocations.
+ */
+export function rateLimiter(options: RateLimitOptions): MiddlewareHandler<{
+  Bindings: { WEATHER_CACHE: DurableObjectNamespace };
+}> {
   return async (c, next) => {
     const ip =
       c.req.header("cf-connecting-ip") ??
       c.req.header("x-forwarded-for")?.split(",")[0]?.trim() ??
       "unknown";
 
-    const now = Date.now();
-    const record = ipRequestCounts.get(ip);
+    const id = c.env.WEATHER_CACHE.idFromName("global");
+    const stub = c.env.WEATHER_CACHE.get(id);
 
-    if (!record || now > record.resetAt) {
-      ipRequestCounts.set(ip, { count: 1, resetAt: now + options.windowMs });
-    } else {
-      record.count++;
-      if (record.count > options.maxRequests) {
-        c.header("Retry-After", String(Math.ceil((record.resetAt - now) / 1000)));
-        return c.json({ error: "Too many requests" }, 429);
-      }
+    const res = await stub.fetch(
+      new Request(`https://do/rate-check?ip=${encodeURIComponent(ip)}&max=${options.maxRequests}&window=${options.windowMs}`),
+    );
+
+    if (res.status === 429) {
+      c.header("Retry-After", res.headers.get("Retry-After") ?? "60");
+      return c.json({ error: "Too many requests" }, 429);
     }
 
     await next();

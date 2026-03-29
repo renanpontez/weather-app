@@ -43,6 +43,7 @@ export function useInitialWeather() {
     isLoading: query.isLoading || geo.loading,
     error: query.error,
     geoError: geo.error,
+    refetch: query.refetch,
     selectLocation,
   };
 }

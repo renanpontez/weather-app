@@ -20,7 +20,7 @@ interface LocationFields {
 export function App() {
   const isOnline = useOnlineStatus();
   const { unit, toggle } = useUnitsPreference();
-  const { weather, isLoading, error, geoError, selectLocation } = useInitialWeather();
+  const { weather, isLoading, error, geoError, refetch, selectLocation } = useInitialWeather();
   const { searches, loading: recentLoading, trackSearch, remove, clearAll } = useRecent();
 
   function handleLocationSelect(loc: LocationFields) {
@@ -77,7 +77,7 @@ export function App() {
         <main id="main-content">
           {errorText && (
             <div className="mx-auto mt-6 max-w-md">
-              <Alert message={errorText} />
+              <Alert message={errorText} onRetry={() => refetch()} />
             </div>
           )}
 

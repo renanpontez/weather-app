@@ -1,4 +1,4 @@
-import type { CurrentWeather, HourlyForecast, DailyForecast } from "@weather-app/shared";
+import type { CurrentWeather, DailyForecast } from "@weather-app/shared";
 
 const BASE_URL = "https://api.open-meteo.com/v1";
 
@@ -11,12 +11,6 @@ interface OpenMeteoResponse {
     wind_direction_10m: number;
     weather_code: number;
     is_day: number;
-  };
-  hourly: {
-    time: string[];
-    temperature_2m: number[];
-    weather_code: number[];
-    precipitation_probability: number[];
   };
   daily: {
     time: string[];
@@ -34,7 +28,6 @@ export async function fetchWeather(
   lon: number
 ): Promise<{
   current: CurrentWeather;
-  hourly: HourlyForecast[];
   daily: DailyForecast[];
 }> {
   const params = new URLSearchParams({
@@ -49,7 +42,6 @@ export async function fetchWeather(
       "weather_code",
       "is_day",
     ].join(","),
-    hourly: ["temperature_2m", "weather_code", "precipitation_probability"].join(","),
     daily: [
       "temperature_2m_max",
       "temperature_2m_min",
@@ -61,7 +53,6 @@ export async function fetchWeather(
     timezone: "auto",
     past_days: "1",
     forecast_days: "7",
-    forecast_hours: "24",
   });
 
   const res = await fetch(`${BASE_URL}/forecast?${params}`);
@@ -81,12 +72,6 @@ export async function fetchWeather(
       weather_code: data.current.weather_code,
       is_day: data.current.is_day === 1,
     },
-    hourly: data.hourly.time.map((time, i) => ({
-      time,
-      temperature: data.hourly.temperature_2m[i],
-      weather_code: data.hourly.weather_code[i],
-      precipitation_probability: data.hourly.precipitation_probability[i],
-    })),
     daily: data.daily.time.map((date, i) => ({
       date,
       temperature_max: data.daily.temperature_2m_max[i],

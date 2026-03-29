@@ -15,7 +15,6 @@ export interface WeatherData {
   country: string;
   country_code: string;
   current: CurrentWeather;
-  hourly: HourlyForecast[];
   daily: DailyForecast[];
   cached_at?: string;
 }
@@ -28,13 +27,6 @@ export interface CurrentWeather {
   wind_direction: number;
   weather_code: number;
   is_day: boolean;
-}
-
-export interface HourlyForecast {
-  time: string;
-  temperature: number;
-  weather_code: number;
-  precipitation_probability: number;
 }
 
 export interface DailyForecast {

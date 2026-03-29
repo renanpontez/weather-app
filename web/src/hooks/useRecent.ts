@@ -1,5 +1,5 @@
 import { useEffect, useCallback, useRef } from "react";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
 import type { RecentSearch, RecentSearchInput } from "@weather-app/shared";
 import {
   getRecentSearches,
@@ -55,7 +55,7 @@ function useLiveSync(invalidate: () => void) {
       socketRef.current?.close();
       socketRef.current = null;
     };
-  }, []); // stable — no dependency on invalidate to avoid reconnect loops
+  }, []);
 }
 
 export function useRecent() {
@@ -74,38 +74,32 @@ export function useRecent() {
 
   useLiveSync(invalidateRecent);
 
-  const trackSearch = useCallback(
-    async (input: RecentSearchInput) => {
-      try {
-        const updated = await addRecentSearch(input);
-        queryClient.setQueryData(queryKeys.recent(), updated);
-      } catch (err) {
-        console.warn("Failed to track search:", err);
-      }
+  const trackMutation = useMutation({
+    mutationFn: addRecentSearch,
+    onSuccess: (updated) => {
+      queryClient.setQueryData(queryKeys.recent(), updated);
     },
-    [queryClient],
-  );
+  });
 
-  const remove = useCallback(
-    async (search: RecentSearch) => {
-      try {
-        const updated = await removeRecentSearch(search.city, search.country);
-        queryClient.setQueryData(queryKeys.recent(), updated);
-      } catch (err) {
-        console.warn("Recent search operation failed:", err);
-      }
+  const removeMutation = useMutation({
+    mutationFn: (search: RecentSearch) => removeRecentSearch(search.city, search.country),
+    onSuccess: (updated) => {
+      queryClient.setQueryData(queryKeys.recent(), updated);
     },
-    [queryClient],
-  );
+  });
 
-  const clearAll = useCallback(async () => {
-    try {
-      await clearRecentSearches();
+  const clearMutation = useMutation({
+    mutationFn: clearRecentSearches,
+    onSuccess: () => {
       queryClient.setQueryData(queryKeys.recent(), []);
-    } catch (err) {
-      console.warn("Recent search operation failed:", err);
-    }
-  }, [queryClient]);
+    },
+  });
 
-  return { searches, loading, trackSearch, remove, clearAll };
+  return {
+    searches,
+    loading,
+    trackSearch: trackMutation.mutate,
+    remove: removeMutation.mutate,
+    clearAll: clearMutation.mutate,
+  };
 }

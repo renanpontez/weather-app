@@ -18,7 +18,6 @@ const mockWeather: WeatherData = {
     weather_code: 2,
     is_day: true,
   },
-  hourly: [],
   daily: [
     {
       date: todayDateString(),
