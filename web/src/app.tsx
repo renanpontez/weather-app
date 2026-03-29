@@ -56,7 +56,7 @@ export function App() {
 
       <div className="mx-auto max-w-5xl px-6 py-8 md:px-12">
         <header className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-          <h1 className="text-3xl font-light tracking-wide text-primary md:text-4xl">
+          <h1 className="text-center text-3xl font-light tracking-wide text-primary md:text-left md:text-4xl">
             WeatherApp
           </h1>
           <div className="w-full md:w-72">

@@ -2,7 +2,6 @@ import clsx from "clsx";
 import type { DailyForecast as DayForecast, TemperatureUnit } from "@weather-app/shared";
 import { formatTemperature, formatDay, todayDateString } from "@/lib/format";
 import { WeatherIcon } from "@/components/weather/WeatherIcon";
-import { useScrollMask } from "@/hooks/useScrollMask";
 
 interface WeekForecastProps {
   days: DayForecast[];
@@ -33,17 +32,15 @@ function HiLo({ hi, lo, unit }: { hi: number; lo: number; unit: TemperatureUnit 
 }
 
 export function WeekForecast({ days, unit }: WeekForecastProps) {
-  const { scrollRef, maskImage, onScroll } = useScrollMask();
-
   // Skip yesterday (index 0), show today + 5 future days
   const visibleDays = days.slice(1, 7);
 
   if (visibleDays.length === 0) return null;
 
   return (
-    <section aria-label="6-day forecast" className="w-full">
+    <section aria-label="Current week forecast" className="w-full">
       <h3 className="mb-3 text-xs font-medium uppercase tracking-widest text-white">
-        6-day forecast
+        Current week forecast
       </h3>
 
       {/* Desktop: grid */}
@@ -67,31 +64,23 @@ export function WeekForecast({ days, unit }: WeekForecastProps) {
         ))}
       </div>
 
-      {/* Mobile: horizontal scroll */}
-      <div
-        ref={scrollRef}
-        className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide md:hidden"
-        role="list"
-        onScroll={onScroll}
-        style={{ maskImage, WebkitMaskImage: maskImage }}
-      >
+      {/* Mobile: vertical stack */}
+      <div className="flex flex-col gap-2 md:hidden" role="list">
         {visibleDays.map((day, i) => (
           <div
             key={day.date}
             role="listitem"
             className={clsx(
-              "flex shrink-0 items-center gap-3 rounded-xl px-5 py-3 animate-fade-in-up",
+              "flex w-full items-center justify-between rounded-xl px-4 py-3 animate-fade-in-up",
               isToday(day.date) ? "bg-white/[0.06]" : "bg-transparent",
             )}
             style={{ animationDelay: `${i * 50}ms` }}
           >
-            <div className="text-left">
-              <p className={clsx("text-xs font-medium", isToday(day.date) ? "text-primary" : "text-muted")}>
-                {isToday(day.date) ? "Today" : formatDay(day.date)}
-              </p>
-              <HiLo hi={day.temperature_max} lo={day.temperature_min} unit={unit} />
-            </div>
+            <p className={clsx("w-12 text-xs font-medium", isToday(day.date) ? "text-primary" : "text-muted")}>
+              {isToday(day.date) ? "Today" : formatDay(day.date)}
+            </p>
             <WeatherIcon code={day.weather_code} isDay={true} size="sm" />
+            <HiLo hi={day.temperature_max} lo={day.temperature_min} unit={unit} />
           </div>
         ))}
       </div>

@@ -127,6 +127,7 @@ export class WeatherCache extends DurableObject {
 
       this.ctx.acceptWebSocket(server);
       this.sessions.add(server);
+      console.log(`[WS] New connection. Total sessions: ${this.sessions.size}`);
 
       server.send(JSON.stringify({ type: "init", searches: await this.getRecent() }));
       return new Response(null, { status: 101, webSocket: client });
@@ -137,20 +138,28 @@ export class WeatherCache extends DurableObject {
 
   webSocketClose(ws: WebSocket) {
     this.sessions.delete(ws);
+    console.log(`[WS] Connection closed. Remaining sessions: ${this.sessions.size}`);
   }
 
   webSocketError(ws: WebSocket) {
     this.sessions.delete(ws);
+    console.log(`[WS] Connection error. Remaining sessions: ${this.sessions.size}`);
   }
 
   private broadcast(data: Record<string, unknown>) {
+    console.log(`[WS] Broadcasting to ${this.sessions.size} sessions`);
     const message = JSON.stringify(data);
+    let sent = 0;
+    let failed = 0;
     for (const ws of this.sessions) {
       try {
         ws.send(message);
+        sent++;
       } catch {
         this.sessions.delete(ws);
+        failed++;
       }
     }
+    console.log(`[WS] Broadcast complete: ${sent} sent, ${failed} failed`);
   }
 }
