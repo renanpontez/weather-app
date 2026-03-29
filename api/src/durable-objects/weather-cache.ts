@@ -5,8 +5,6 @@ const CACHE_TTL_MS = 10 * 60 * 1000; // 10 minutes
 const MAX_RECENT = 10;
 
 export class WeatherCache extends DurableObject {
-  private sessions: Set<WebSocket> = new Set();
-
   // --- Storage helpers ---
 
   private async getRecent(): Promise<RecentSearch[]> {
@@ -126,8 +124,9 @@ export class WeatherCache extends DurableObject {
       const [client, server] = Object.values(pair);
 
       this.ctx.acceptWebSocket(server);
-      this.sessions.add(server);
-      console.log(`[WS] New connection. Total sessions: ${this.sessions.size}`);
+
+      const sockets = this.ctx.getWebSockets();
+      console.log(`[WS] New connection. Total sessions: ${sockets.length}`);
 
       server.send(JSON.stringify({ type: "init", searches: await this.getRecent() }));
       return new Response(null, { status: 101, webSocket: client });
@@ -137,29 +136,28 @@ export class WeatherCache extends DurableObject {
   }
 
   webSocketClose(ws: WebSocket) {
-    this.sessions.delete(ws);
-    console.log(`[WS] Connection closed. Remaining sessions: ${this.sessions.size}`);
+    const remaining = this.ctx.getWebSockets().length;
+    console.log(`[WS] Connection closed. Remaining sessions: ${remaining}`);
   }
 
   webSocketError(ws: WebSocket) {
-    this.sessions.delete(ws);
-    console.log(`[WS] Connection error. Remaining sessions: ${this.sessions.size}`);
+    const remaining = this.ctx.getWebSockets().length;
+    console.log(`[WS] Connection error. Remaining sessions: ${remaining}`);
   }
 
   private broadcast(data: Record<string, unknown>) {
-    console.log(`[WS] Broadcasting to ${this.sessions.size} sessions`);
+    const sockets = this.ctx.getWebSockets();
+    console.log(`[WS] Broadcasting to ${sockets.length} sessions`);
     const message = JSON.stringify(data);
     let sent = 0;
-    let failed = 0;
-    for (const ws of this.sessions) {
+    for (const ws of sockets) {
       try {
         ws.send(message);
         sent++;
       } catch {
-        this.sessions.delete(ws);
-        failed++;
+        // Dead socket — runtime will clean it up
       }
     }
-    console.log(`[WS] Broadcast complete: ${sent} sent, ${failed} failed`);
+    console.log(`[WS] Broadcast complete: ${sent} sent`);
   }
 }
