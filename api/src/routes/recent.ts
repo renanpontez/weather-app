@@ -2,13 +2,9 @@ import { Hono } from "hono";
 import type { Env } from "../index";
 import type { RecentSearchInput } from "@weather-app/shared";
 import { fetchWeather } from "../lib/open-meteo";
+import { getStub } from "../lib/get-stub";
 
 export const recentRoute = new Hono<{ Bindings: Env }>();
-
-function getStub(env: Env) {
-  const id = env.WEATHER_CACHE.idFromName("global");
-  return env.WEATHER_CACHE.get(id);
-}
 
 async function resolveWeather(stub: DurableObjectStub, lat: number, lon: number): Promise<{ temperature: number; weather_code: number } | null> {
   // Try cache first

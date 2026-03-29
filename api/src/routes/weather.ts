@@ -1,13 +1,9 @@
 import { Hono } from "hono";
 import type { Env } from "../index";
 import { fetchWeather } from "../lib/open-meteo";
+import { getStub } from "../lib/get-stub";
 
 export const weatherRoute = new Hono<{ Bindings: Env }>();
-
-function getStub(env: Env) {
-  const id = env.WEATHER_CACHE.idFromName("global");
-  return env.WEATHER_CACHE.get(id);
-}
 
 async function refreshCache(
   stub: DurableObjectStub,
