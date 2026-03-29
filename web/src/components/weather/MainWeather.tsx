@@ -3,16 +3,13 @@ import { WEATHER_CODES } from "@weather-app/shared";
 import { convertTemp, formatTemperature, formatWindSpeed, todayDateString } from "@/lib/format";
 import { WeatherIcon } from "@/components/weather/WeatherIcon";
 import { Skeleton } from "@/components/common/Skeleton";
-import { UnitToggle } from "@/components/weather/UnitToggle";
-
 interface MainWeatherProps {
   weather: WeatherData | null;
   unit: TemperatureUnit;
   loading: boolean;
-  onToggleUnit: () => void;
 }
 
-export function MainWeather({ weather, unit, loading, onToggleUnit }: MainWeatherProps) {
+export function MainWeather({ weather, unit, loading }: MainWeatherProps) {
   if (loading) {
     return (
       <div className="flex flex-col items-center gap-4">
@@ -66,10 +63,6 @@ export function MainWeather({ weather, unit, loading, onToggleUnit }: MainWeathe
           {temp}°
         </p>
         <WeatherIcon code={current.weather_code} isDay={current.is_day} size="lg" />
-
-        <div className="absolute -right-14 top-1/2 -translate-y-1/2">
-          <UnitToggle unit={unit} onToggle={onToggleUnit} />
-        </div>
       </div>
 
       <p className="text-lg font-light text-white">

@@ -8,6 +8,7 @@
   --color-muted: rgba(255, 255, 255, 0.5);
   --color-surface: #141720;
   --color-surface-hover: #1a1e2a;
+  --color-surface-light: rgba(0, 0, 0, 0.05);
 }
 
 /* Hide scrollbar for horizontal scroll containers */
@@ -33,6 +34,87 @@
 
 .animate-fade-in-up {
   animation: fade-in-up 0.4s ease-out both;
+}
+
+/* Weather background effects */
+.weather-particles {
+  position: fixed;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+@keyframes rain-fall {
+  0% { transform: translateY(-10px) translateX(0); }
+  100% { transform: translateY(100vh) translateX(-10px); }
+}
+
+.weather-drop {
+  position: absolute;
+  top: -10px;
+  width: 2px;
+  height: 20px;
+  background: linear-gradient(to bottom, transparent, rgba(174, 194, 255, 0.4));
+  border-radius: 0 0 2px 2px;
+  animation: rain-fall linear infinite;
+}
+
+@keyframes snow-fall {
+  0% { transform: translateY(-10px) translateX(0) rotate(0deg); }
+  50% { transform: translateY(50vh) translateX(20px) rotate(180deg); }
+  100% { transform: translateY(100vh) translateX(-10px) rotate(360deg); }
+}
+
+.weather-flake {
+  position: absolute;
+  top: -10px;
+  background: rgba(255, 255, 255, 0.6);
+  border-radius: 50%;
+  animation: snow-fall linear infinite;
+}
+
+@keyframes lightning-flash {
+  0%, 94%, 100% { opacity: 0; }
+  95% { opacity: 0.15; }
+  96% { opacity: 0; }
+  97% { opacity: 0.1; }
+}
+
+.weather-lightning {
+  position: fixed;
+  inset: 0;
+  background: white;
+  opacity: 0;
+  pointer-events: none;
+  animation: lightning-flash 6s ease-in-out infinite;
+}
+
+@keyframes fog-drift {
+  0% { transform: translateX(-20%); }
+  50% { transform: translateX(20%); }
+  100% { transform: translateX(-20%); }
+}
+
+.weather-fog-layer {
+  position: absolute;
+  left: -20%;
+  width: 140%;
+  height: 30%;
+  background: radial-gradient(ellipse at center, rgba(255, 255, 255, 0.12), transparent 70%);
+  animation: fog-drift 12s ease-in-out infinite;
+}
+
+/* Stars effect */
+@keyframes star-twinkle {
+  0%, 100% { opacity: 0.1; }
+  50% { opacity: 0.4; }
+}
+
+.weather-star {
+  position: absolute;
+  background: white;
+  border-radius: 50%;
+  animation: star-twinkle ease-in-out infinite;
 }
 
 /* Respect reduced motion preference */

@@ -34,21 +34,21 @@ const mockWeather: WeatherData = {
 describe("WeatherDisplay", () => {
   it("shows loading skeleton when loading", () => {
     render(
-      <MainWeather weather={null} unit="celsius" loading={true} onToggleUnit={vi.fn()} />,
+      <MainWeather weather={null} unit="celsius" loading={true} />,
     );
     expect(screen.getAllByRole("status").length).toBeGreaterThan(0);
   });
 
   it("shows empty state when no weather data", () => {
     render(
-      <MainWeather weather={null} unit="celsius" loading={false} onToggleUnit={vi.fn()} />,
+      <MainWeather weather={null} unit="celsius" loading={false} />,
     );
     expect(screen.getByText(/Search for a city/)).toBeInTheDocument();
   });
 
   it("renders city name and temperature", () => {
     render(
-      <MainWeather weather={mockWeather} unit="celsius" loading={false} onToggleUnit={vi.fn()} />,
+      <MainWeather weather={mockWeather} unit="celsius" loading={false} />,
     );
     const tempValue = Math.round(mockWeather.current.temperature);
     expect(screen.getByText(mockWeather.city)).toBeInTheDocument();
@@ -57,7 +57,7 @@ describe("WeatherDisplay", () => {
 
   it("converts to fahrenheit", () => {
     render(
-      <MainWeather weather={mockWeather} unit="fahrenheit" loading={false} onToggleUnit={vi.fn()} />,
+      <MainWeather weather={mockWeather} unit="fahrenheit" loading={false} />,
     );
     const tempF = Math.round(mockWeather.current.temperature * 9 / 5 + 32);
     expect(screen.getByText(`${tempF}°`)).toBeInTheDocument();
@@ -65,7 +65,7 @@ describe("WeatherDisplay", () => {
 
   it("shows hi/lo when today's daily data exists", () => {
     render(
-      <MainWeather weather={mockWeather} unit="celsius" loading={false} onToggleUnit={vi.fn()} />,
+      <MainWeather weather={mockWeather} unit="celsius" loading={false} />,
     );
     const today = mockWeather.daily[0];
     expect(screen.getByText(formatTemperature(today.temperature_max, "celsius"))).toBeInTheDocument();
@@ -74,7 +74,7 @@ describe("WeatherDisplay", () => {
 
   it("shows weather details (feels like, humidity, wind)", () => {
     render(
-      <MainWeather weather={mockWeather} unit="celsius" loading={false} onToggleUnit={vi.fn()} />,
+      <MainWeather weather={mockWeather} unit="celsius" loading={false} />,
     );
     expect(screen.getByText(formatTemperature(mockWeather.current.feels_like, "celsius"))).toBeInTheDocument();
     expect(screen.getByText(`${mockWeather.current.humidity}%`)).toBeInTheDocument();
@@ -83,7 +83,7 @@ describe("WeatherDisplay", () => {
 
   it("has rich aria-label with weather details", () => {
     render(
-      <MainWeather weather={mockWeather} unit="celsius" loading={false} onToggleUnit={vi.fn()} />,
+      <MainWeather weather={mockWeather} unit="celsius" loading={false} />,
     );
     const article = screen.getByRole("article");
     const label = article.getAttribute("aria-label")!;

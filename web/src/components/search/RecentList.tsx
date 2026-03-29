@@ -3,7 +3,6 @@ import type { RecentSearch, TemperatureUnit } from "@weather-app/shared";
 import { formatTemperature, timeAgo } from "@/lib/format";
 import { WeatherIcon } from "@/components/weather/WeatherIcon";
 import { Skeleton } from "@/components/common/Skeleton";
-import { useScrollMask } from "@/hooks/useScrollMask";
 
 interface RecentListProps {
   searches: RecentSearch[];
@@ -16,8 +15,6 @@ interface RecentListProps {
 }
 
 export function RecentList({ searches, unit, loading, activeCity, onSelect, onRemove, onClearAll }: RecentListProps) {
-  const { scrollRef, maskImage, onScroll } = useScrollMask();
-
   if (loading) {
     return (
       <div>
@@ -51,11 +48,8 @@ export function RecentList({ searches, unit, loading, activeCity, onSelect, onRe
         </button>
       </div>
       <div
-        ref={scrollRef}
         className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide"
         role="list"
-        onScroll={onScroll}
-        style={{ maskImage, WebkitMaskImage: maskImage }}
       >
         {searches.map((search, i) => {
           const isActive = search.city === activeCity;
@@ -69,7 +63,7 @@ export function RecentList({ searches, unit, loading, activeCity, onSelect, onRe
                 "hover:border-primary/20 hover:bg-surface-hover focus:outline-none focus:ring-2 focus:ring-primary/20",
                 isActive
                   ? "border-primary/30 bg-primary/5"
-                  : "border-white/10 bg-surface",
+                  : "border-white/10 bg-surface-light",
               )}
               style={{ animationDelay: `${i * 50}ms` }}
               onClick={() => onSelect(search)}

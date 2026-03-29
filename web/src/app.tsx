@@ -8,8 +8,9 @@ import { SearchBar } from "@/components/search/SearchBar";
 import { MainWeather } from "@/components/weather/MainWeather";
 import { RecentList } from "@/components/search/RecentList";
 import { Alert } from "@/components/common/Alert";
+import { UnitToggle } from "@/components/weather/UnitToggle";
 import { WeekForecast } from "@/components/weather/WeekForecast";
-
+import { WeatherBackground } from "@/components/weather/WeatherBackground";
 interface LocationFields {
   city: string;
   country: string;
@@ -43,7 +44,11 @@ export function App() {
   const errorText = error instanceof Error ? error.message : error ? String(error) : null;
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-[#0f1219] via-background to-[#0a0c10] text-white">
+    <div className="relative min-h-screen text-white">
+      <WeatherBackground
+        weatherCode={weather?.current.weather_code ?? 0}
+        isDay={weather?.current.is_day ?? true}
+      />
       <a
         href="#main-content"
         className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-50 focus:rounded-full focus:bg-primary focus:px-4 focus:py-2 focus:text-sm focus:text-white"
@@ -58,22 +63,32 @@ export function App() {
       )}
 
       <div className="mx-auto max-w-5xl px-6 py-8 md:px-12">
-        <header className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-          <h1 className="text-center text-3xl font-light tracking-wide text-primary md:text-left md:text-4xl">
-            WeatherApp
-          </h1>
-          <div className="w-full md:w-72">
-            <SearchBar
-              onCityPick={(city: GeocodingResult) =>
-                handleLocationSelect({
-                  city: city.name,
-                  country: city.country,
-                  country_code: city.country_code,
-                  latitude: city.latitude,
-                  longitude: city.longitude,
-                })
-              }
-            />
+        <header className="flex flex-col gap-4">
+          <div className="flex items-center justify-between">
+            <h1 className="text-3xl font-light tracking-wide text-primary md:text-4xl">
+              WeatherApp
+            </h1>
+            <div className="flex items-center gap-2 md:hidden">
+              <UnitToggle unit={unit} onToggle={toggle} />
+            </div>
+          </div>
+          <div className="flex items-center gap-2 md:max-w-md md:ml-auto md:-mt-12">
+            <div className="flex-1">
+              <SearchBar
+                onCityPick={(city: GeocodingResult) =>
+                  handleLocationSelect({
+                    city: city.name,
+                    country: city.country,
+                    country_code: city.country_code,
+                    latitude: city.latitude,
+                    longitude: city.longitude,
+                  })
+                }
+              />
+            </div>
+            <div className="hidden md:block">
+              <UnitToggle unit={unit} onToggle={toggle} />
+            </div>
           </div>
         </header>
 
@@ -91,7 +106,7 @@ export function App() {
           )}
 
           <div ref={weatherRef} className="flex min-h-[40vh] items-center justify-center py-18">
-            <MainWeather weather={weather} unit={unit} loading={isLoading} onToggleUnit={toggle} />
+            <MainWeather weather={weather} unit={unit} loading={isLoading} />
           </div>
 
           <div className="flex flex-col gap-10">
