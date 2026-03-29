@@ -1,4 +1,5 @@
 name = "weather-api"
+account_id = "c05ca05a196a72ce05061da69b0170f1"
 main = "src/index.ts"
 compatibility_date = "2025-03-20"
 compatibility_flags = ["nodejs_compat"]
